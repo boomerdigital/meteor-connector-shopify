@@ -28,6 +28,8 @@ export function getApiInfo(shopId = Reaction.getShopId()) {
   return {
     apiKey: settings.apiKey,
     password: settings.password,
-    shopName: settings.shopName
+    shopName: settings.shopName,
+    timeout: 300000, // Defaults to 60000, or 1 minute.
+    autoLimit: true
   };
 }
