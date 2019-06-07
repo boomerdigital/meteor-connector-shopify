@@ -24,26 +24,6 @@ Template.shopifyImport.events({
   "click [data-event-action=importDataFromShopify]"(event) {
     event.preventDefault();
 
-    if ($("#shopifyCheckboxCustomers").is(":checked") || $("#shopifyCheckboxProducts").is(":checked")) {
-      $(event.currentTarget).html(`<i class='fa fa-circle-o-notch fa-spin'></i> ${i18next.t("admin.shopifyConnectSettings.importing")}`);
-      event.currentTarget.disabled = true;
-    }
-
-    // If this is the primary shop, redirect to index
-    if (Reaction.getShopId() === Reaction.getPrimaryShopId()) {
-      Router.go("index");
-    } else {
-      const shopId = Reaction.getShopId();
-      const shop = Shops.findOne({ _id: shopId });
-
-      // Check to see if this shop has a slug, otherwise direct to shopId route
-      if (shop && shop.slug) {
-        Router.go(`/shop/${shop.slug}`);
-      } else {
-        Router.go(`/shop/${shopId}`);
-      }
-    }
-
     // If no option is selected, return error asking user to select type of import
     if (!$("#shopifyCheckboxCustomers").is(":checked") && !$("#shopifyCheckboxProducts").is(":checked")) {
       return Alerts.toast(i18next.t("admin.shopifyConnectSettings.chooseImportType"), "error");
