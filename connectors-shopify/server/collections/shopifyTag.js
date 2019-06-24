@@ -48,11 +48,6 @@ export const ShopifyTag = new SimpleSchema({
     type: String,
     optional: true
   },
-  // defines if a tag is visible to global or web or mobile scope
-  publishedScope: {
-    type: String,
-    optional: true
-  },
   // stores shopify collection rules to handle tag searches
   rules: {
     type: Array,

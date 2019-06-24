@@ -244,6 +244,22 @@ function saveImage(url, metadata) {
     }).save();
 }
 
+/**
+ *
+ *
+ * @param {*} url
+ * @param {*} metadata
+ */
+function saveTagImage(url, metadata) {
+  new Job(Jobs, "connectors/shopify/import/tag-image", { url, metadata })
+    .priority("normal")
+    .retry({
+      retries: 5,
+      wait: 5000,
+      backoff: "exponential" // delay by twice as long for each subsequent retry
+    }).save();
+}
+
 export const methods = {
   /**
    * Imports products for the active Reaction Shop from Shopify with the API credentials setup for that shop.
@@ -296,25 +312,25 @@ export const methods = {
               limit: 250
             });
             // eslint-disable-next-line no-await-in-loop
-           const customTags = await shopify.customCollection.list({
+            const customTags = await shopify.customCollection.list({
               product_id: shopifyProduct.id,
               limit: 250
             });
             const shopifyTags = [...customTags, ...smartTags];
 
-            for (const tag of shopifyTags) {
+            for (const shopifyTag of shopifyTags) {
               const normalizedTag = {
-                description: tag.body_html,
-                image: tag.image && tag.image.src,
-                name: tag.title,
-                publishedScope: tag.published_scope,
-                rules: tag.rules,
-                slug: tag.handle,
-                sortOrder: tag.sort_order,
+                description: shopifyTag.body_html,
+                displayTitle: shopifyTag.title,
+                image: shopifyTag.image && shopifyTag.image.src,
+                name: shopifyTag.title,
+                rules: shopifyTag.rules,
+                slug: shopifyTag.handle,
+                sortOrder: shopifyTag.sort_order,
                 shopId,
                 isTopLevel: false,
-                updatedAt: new Date(),
-                createdAt: new Date()
+                updatedAt: shopifyTag.updated_at,
+                createdAt: shopifyTag.published_at
               };
 
               // If we have a cached tag for this slug, we don't need to create a new one
@@ -322,7 +338,16 @@ export const methods = {
                 // this tag doesn't exist, create it, add it to our tag cache
                 normalizedTag._id = Tags.insert(normalizedTag);
                 tagCache[normalizedTag.slug] = normalizedTag._id;
+
+                if (shopifyTag.image) {
+                  saveTagImage(shopifyTag.src, {
+                    ownerId: Meteor.userId(),
+                    tagId: normalizedTag._id,
+                    shopId
+                  });
+                }
               }
+
               // push the tag's _id into hashtags from the cache
               hashtags.push(tagCache[normalizedTag.slug]);
             }
@@ -338,7 +363,7 @@ export const methods = {
             ids.push(reactionProductId);
 
             // Save the primary image to the grid and as priority 0
-            const primaryImage = {src: null, ...shopifyProduct.image}
+            const primaryImage = { src: null, ...shopifyProduct.image };
             saveImage(primaryImage.src, {
               ownerId: Meteor.userId(),
               productId: reactionProductId,
@@ -355,7 +380,7 @@ export const methods = {
                   ownerId: Meteor.userId(),
                   productId: reactionProductId,
                   shopId,
-                  priority: productImage.position-1, // Shopify index positions starting at 1.
+                  priority: productImage.position - 1, // Shopify index positions starting at 1.
                   toGrid: 1
                 });
               }
