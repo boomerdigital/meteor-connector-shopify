@@ -34,22 +34,17 @@ const RulesAttribute = new SimpleSchema({
  */
 export const ShopifyTag = new SimpleSchema({
   // stores shopify collection sortOrder which can be used to control default sorting of products for this tag
-  sortOrder: {
-    type: String,
-    optional: true
-  },
-  // stores collection featured image from Shopify
-  image: {
+  "sortOrder": {
     type: String,
     optional: true
   },
   // stores Shopify `body_html` property data
-  description: {
+  "description": {
     type: String,
     optional: true
   },
   // stores shopify collection rules to handle tag searches
-  rules: {
+  "rules": {
     type: Array,
     optional: true
   },

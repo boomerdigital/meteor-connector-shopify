@@ -244,22 +244,6 @@ function saveImage(url, metadata) {
     }).save();
 }
 
-/**
- *
- *
- * @param {*} url
- * @param {*} metadata
- */
-function saveTagImage(url, metadata) {
-  new Job(Jobs, "connectors/shopify/import/tag-image", { url, metadata })
-    .priority("normal")
-    .retry({
-      retries: 5,
-      wait: 5000,
-      backoff: "exponential" // delay by twice as long for each subsequent retry
-    }).save();
-}
-
 export const methods = {
   /**
    * Imports products for the active Reaction Shop from Shopify with the API credentials setup for that shop.
@@ -322,7 +306,7 @@ export const methods = {
               const normalizedTag = {
                 description: shopifyTag.body_html,
                 displayTitle: shopifyTag.title,
-                image: shopifyTag.image && shopifyTag.image.src,
+                heroMediaUrl: shopifyTag.image && shopifyTag.image.src,
                 name: shopifyTag.title,
                 rules: shopifyTag.rules,
                 slug: shopifyTag.handle,
@@ -340,7 +324,7 @@ export const methods = {
                 tagCache[normalizedTag.slug] = normalizedTag._id;
 
                 if (shopifyTag.image) {
-                  saveTagImage(shopifyTag.src, {
+                  saveImage(shopifyTag.image.src, {
                     ownerId: Meteor.userId(),
                     tagId: normalizedTag._id,
                     shopId
