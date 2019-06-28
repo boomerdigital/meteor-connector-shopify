@@ -34,7 +34,7 @@ function createReactionProductFromShopifyProduct(options) {
   const tags = shopifyProduct.tags.split(",").map(Reaction.getSlug);
   const reactionProduct = {
     ancestors: [],
-    createdAt: shopifyProduct.published_at,
+    createdAt: new Date(),
     description: shopifyProduct.body_html,
     handle: shopifyProduct.handle,
     hashtags,
