@@ -34,7 +34,7 @@ function createReactionProductFromShopifyProduct(options) {
   const tags = shopifyProduct.tags.split(",").map(Reaction.getSlug);
   const reactionProduct = {
     ancestors: [],
-    createdAt: new Date(),
+    createdAt: shopifyProduct.published_at,
     description: shopifyProduct.body_html,
     handle: shopifyProduct.handle,
     hashtags,
@@ -76,11 +76,6 @@ function createReactionProductFromShopifyProduct(options) {
   }
 
   return reactionProduct;
-}
-
-function capitalize(str) {
-  const finalString = str === null ? "" : String(str);
-  return finalString.charAt(0).toUpperCase() + str.slice(1);
 }
 
 /**
@@ -251,7 +246,14 @@ function saveImage(url, metadata) {
     .save();
 }
 
-async function saveTags({shopify, shopifyProduct, shopId, tagCache}) {
+/**
+ * Identify and save all the shopify tags for given product
+ * @private
+ * @method saveTags
+ * @param {*} { shopify, shopifyProduct, shopId, tagCache }
+ * @return {*} hashtags for product
+ */
+async function saveTags({ shopify, shopifyProduct, shopId, tagCache }) {
   // Get tags from shopify and register them if they don't exist.
   // push tag Id's into our hashtags array for use in the product
   // We can't load all tags beforehand because Shopify doesn't have a tags API
@@ -319,7 +321,15 @@ async function saveTags({shopify, shopifyProduct, shopId, tagCache}) {
   return hashtags;
 }
 
-function saveProduct({shopifyProduct, shopId, hashtags, ids}) {
+
+/**
+ * Save the given shopify products to reaction
+ * @private
+ * @method saveProduct
+ * @param {*} { shopifyProduct, shopId, hashtags, ids }
+ * @return {undefined}
+ */
+function saveProduct({ shopifyProduct, shopId, hashtags, ids }) {
   const price = { min: null, max: null, range: "0.00" };
   let isSoldOut = true;
   let isBackorder = false;
@@ -555,9 +565,16 @@ function saveProduct({shopifyProduct, shopId, hashtags, ids}) {
   );
 }
 
-async function updateProductAndTags({product, shopifyProduct, shopify, shopId, tagCache}) {
-  Logger.info("Updating product and tags...")
-  const hashtags = await saveTags({shopify, shopifyProduct, shopId, tagCache});
+/**
+ * Update product feilds and tags from shopify
+ * @private
+ * @method updateProductAndTags
+ * @param {*} { product, shopifyProduct, shopify, shopId, tagCache }
+ * @return {undefined}
+ */
+async function updateProductAndTags({ product, shopifyProduct, shopify, shopId, tagCache }) {
+  Logger.info("Updating product and tags...");
+  const hashtags = await saveTags({ shopify, shopifyProduct, shopId, tagCache });
   const tags = shopifyProduct.tags.split(",").map(Reaction.getSlug);
   Products.update(
     {
@@ -624,8 +641,9 @@ export const methods = {
           if (!product) {
             Logger.debug(`Importing ${shopifyProduct.title}`);
 
-            const hashtags = await saveTags({shopify, shopifyProduct, shopId, tagCache});
-            saveProduct({shopifyProduct, shopId, ids, hashtags});
+            // eslint-disable-next-line no-await-in-loop
+            const hashtags = await saveTags({ shopify, shopifyProduct, shopId, tagCache });
+            saveProduct({ shopifyProduct, shopId, ids, hashtags });
 
             Logger.debug(`Product ${shopifyProduct.title} added`);
           } else {
