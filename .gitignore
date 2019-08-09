@@ -19,5 +19,5 @@ node_modules/
 **
 
 # consiider only shopify-connector folders
-!connectors/
-!connectors-shopify/
+!connectors/*
+!connectors-shopify/*
