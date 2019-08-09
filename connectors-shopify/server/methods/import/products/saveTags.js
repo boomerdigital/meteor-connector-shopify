@@ -63,9 +63,10 @@ export async function saveTags({ shopify, shopifyProduct, shopId, tagCache }) {
 
       // this tag doesn't exist, create it, add it to our tag cache
       normalizedTag._id = Tags.insert(normalizedTag);
+
       // eslint-disable-next-line no-await-in-loop
-      const parenTagId = await findAndupdateParentTag(normalizedTag);
-      console.log(inspect(parenTagId));
+      findAndupdateParentTag(normalizedTag);
+
       tagCache[normalizedTag.slug] = normalizedTag._id;
       if (shopifyTag.image) {
         saveImage(shopifyTag.image.src, {
@@ -155,14 +156,6 @@ function findAndupdateParentTag(normalizedTag) {
 
 // eslint-disable-next-line require-jsdoc
 function updateParentTag(parentSlug, { _id, shopId }) {
-  const existingTag = Tags.findOne({
-    slug: parentSlug,
-    shopId
-  });
-  const relatedTagIds = existingTag.relatedTagIds;
-  relatedTagIds.push(_id);
-  console.log({Id: existingTag.relatedTagIds});
-
   return Tags.update({ slug: parentSlug, shopId }, {
     $addToSet: {
       relatedTagIds: _id

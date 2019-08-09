@@ -14,10 +14,3 @@ node_modules/
 
 # OSX files
 .DS_Store
-
-# ignore all subfolders
-**
-
-# consiider only shopify-connector folders
-!connectors/*
-!connectors-shopify/*
